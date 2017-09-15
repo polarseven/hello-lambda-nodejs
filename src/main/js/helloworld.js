@@ -8,7 +8,7 @@ exports.handler = (event, context, callback) => {
   console.log("> handler");
   console.log(`- name:${event.name}`);
 
-  const defaultText = "Hello World!";
+  const defaultText = process.env.DEFAULT_GREETING || "Hello World!";
   var response = {};
 
   if (isNullOrEmpty(event.name)) {
