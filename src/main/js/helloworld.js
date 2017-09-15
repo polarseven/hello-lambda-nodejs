@@ -6,7 +6,7 @@ isNullOrEmpty = (str) => {
 
 exports.handler = (event, context, callback) => {
   console.log("> handler");
-  console.log("- name:" + event.name);
+  console.log(`- name:${event.name}`);
 
   const defaultText = "Hello World!";
   var response = {};
@@ -14,7 +14,7 @@ exports.handler = (event, context, callback) => {
   if (isNullOrEmpty(event.name)) {
     response.text = defaultText;
   } else {
-    response.text = "Hello " + event.name + "!";
+    response.text = `Hello ${event.name}!`;
   }
 
   console.log("< handler");
