@@ -1,0 +1,22 @@
+{
+  "name": "hello-lambda-nodejs",
+  "version": "0.1.0",
+  "description": "An AWS Lambda Function authored using Node.js",
+  "repository": {
+    "type": "git",
+    "url": "https://bitbucket.org/mwarman/hello-lambda-nodejs"
+  },
+  "author": "Matt Warman",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-zip": "^4.0.0",
+    "run-sequence": "^2.1.0"
+  }
+}
