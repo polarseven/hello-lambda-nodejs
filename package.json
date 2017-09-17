@@ -15,9 +15,15 @@
     "lodash": "^4.17.4"
   },
   "devDependencies": {
+    "@types/lodash": "ts2.5",
+    "@types/node": "^8.0.28",
     "del": "^3.0.0",
     "gulp": "^3.9.1",
+    "gulp-tslint": "^8.1.2",
+    "gulp-typescript": "^3.2.2",
     "gulp-zip": "^4.0.0",
-    "run-sequence": "^2.1.0"
+    "run-sequence": "^2.1.0",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2"
   }
 }
