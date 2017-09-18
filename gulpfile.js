@@ -35,6 +35,8 @@ gulp.task('zip', () =>
   .pipe(gulp.dest('dist'))
 );
 
+gulp.task('build', ['lint', 'scripts']);
+
 gulp.task('default', ['clean'], () =>
   sequence(['lint', 'scripts', 'modules'], 'zip')
 );
