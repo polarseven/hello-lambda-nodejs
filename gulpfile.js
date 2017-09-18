@@ -35,10 +35,6 @@ gulp.task('zip', () =>
   .pipe(gulp.dest('dist'))
 );
 
-gulp.task('dist-with-modules', ['clean'], () =>
-  sequence(['lint', 'scripts', 'modules'], 'zip')
-);
-
 gulp.task('default', ['clean'], () =>
-  sequence(['lint', 'scripts'], 'zip')
+  sequence(['lint', 'scripts', 'modules'], 'zip')
 );
