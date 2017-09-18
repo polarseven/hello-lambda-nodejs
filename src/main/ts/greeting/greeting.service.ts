@@ -12,7 +12,7 @@ export class GreetingService {
     const params: any = {
       TableName: 'Greeting',
       Key: {
-        'id': { N: `${id}` }
+        'id': { S: `${id}` }
       }
     };
 
@@ -21,7 +21,7 @@ export class GreetingService {
         console.error(err);
         console.log(`< findAll`);
       } else {
-        console.log(`- data: ${data}`);
+        console.log(`- data: ${JSON.stringify(data)}`);
         console.log(`< findAll`);
       }
     });
