@@ -2,8 +2,31 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "Hello Lambda Node.JS Stack."
 
 Resources:
+  GreetingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: id
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      Tags:
+        - Key: Name
+          Value: GreetingTable
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
   FindGreetingFunction:
     Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
     Properties:
       Description: Find a Greeting by primary key id.
       Code:
@@ -13,6 +36,9 @@ Resources:
       Runtime: nodejs6.10
       Timeout: 5
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
       Tags:
         - Key: Name
           Value: FindGreeting
