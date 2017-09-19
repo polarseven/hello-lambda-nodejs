@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Hello Lambda Node.JS Stack."
+
+Resources:
+  FindGreetingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Find a Greeting by primary key id.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: findgreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Tags:
+        - Key: Name
+          Value: FindGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  ListBucketsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: List all S3 buckets.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: listbuckets.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/AWSLambdaS3ExecutionRole
+      Tags:
+        - Key: Name
+          Value: ListBuckets
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  HelloWorldFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Hello World function authored in NodeJS.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: helloworld.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DEFAULT_GREETING: Hello World!
+      Tags:
+        - Key: Name
+          Value: HelloWorld
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  PingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Returns 'pong' when executed with any input.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: ping.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Ping
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  UppercaseFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Converts all String attributes to UPPERCASE.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: uppercase.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Uppercase
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  LowercaseFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Converts all String attributes to lowercase.
+      Code:
+        S3Bucket: net.leanstacks.lambda
+        S3Key: hello-lambda-nodejs/archive.zip
+      Handler: lowercase.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Lowercase
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+Outputs:
+  FindGreetingFunctionName:
+    Value: !Ref FindGreetingFunction
+    Description: Find Greeting Function
+  FindGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - FindGreetingFunction
+        - Arn
+    Description: Find Greeting Function ARN
+  ListBucketsFunctionName:
+    Value: !Ref ListBucketsFunction
+    Description: List Buckets Function
+  ListBucketsFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - ListBucketsFunction
+        - Arn
+    Description: List Buckets Function ARN
+  HelloWorldFunctionName:
+    Value: !Ref HelloWorldFunction
+    Description: HelloWorld Function
+  HelloWorldFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - HelloWorldFunction
+        - Arn
+    Description: HelloWorld Function ARN
+  PingFunctionName:
+    Value: !Ref PingFunction
+    Description: Ping Function
+  PingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - PingFunction
+        - Arn
+    Description: Ping Function ARN
+  UppercaseFunctionName:
+    Value: !Ref UppercaseFunction
+    Description: Uppercase Function
+  UppercaseFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - UppercaseFunction
+        - Arn
+    Description: Uppercase Function ARN
+  LowercaseFunctionName:
+    Value: !Ref LowercaseFunction
+    Description: Lowercase Function
+  LowercaseFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - LowercaseFunction
+        - Arn
+    Description: Lowercase Function ARN
