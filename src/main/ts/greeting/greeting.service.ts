@@ -11,7 +11,7 @@ export class GreetingService {
   ddb: AWS.DynamoDB = new AWS.DynamoDB({ apiVersion: '2012-10-08' });
 
   findById(id: string): Rx.Observable<Greeting>|any {
-    console.log(`> findAll`);
+    console.log(`> findById`);
 
     const params: any = {
       TableName: this.tableName,
@@ -24,7 +24,7 @@ export class GreetingService {
     const getItem: any =
       Rx.Observable.bindNodeCallback(this.ddb.getItem.bind(this.ddb));
 
-    console.log(`< findAll`);
+    console.log(`< findById`);
     return getItem(params)
       .map((data: any) => {
         console.log(`- map`);
@@ -43,12 +43,15 @@ export class GreetingService {
   save(greeting: Greeting): Rx.Observable<Greeting>|any {
     console.log(`> save`);
 
+    greeting.id = uuid();
+
     const params: any = {
       TableName: this.tableName,
       Item: {
-        'id': { S: `${greeting.id || uuid()}` },
+        'id': { S: `${greeting.id}` },
         'text': { S: `${greeting.text}` }
-      }
+      },
+      ConditionExpression: `attribute_not_exists(id)`
     };
     console.log(`- params: ${JSON.stringify(params)}`);
 
@@ -60,7 +63,7 @@ export class GreetingService {
       .map((data: any) => {
         console.log(`- map`);
         console.log(`- data: ${JSON.stringify(data)}`);
-        return data;
+        return greeting;
       });
   }
 
