@@ -34,6 +34,29 @@ Resources:
         - Key: Owner
           Value: Matthew Warman
 
+  CreateGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Create a Greeting and save in DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: creategreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+      Tags:
+        - Key: Name
+          Value: CreateGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
   FindGreetingFunction:
     Type: AWS::Lambda::Function
     DependsOn: GreetingTable
@@ -156,6 +179,15 @@ Resources:
           Value: Matthew Warman
 
 Outputs:
+  CreateGreetingFunctionName:
+    Value: !Ref CreateGreetingFunction
+    Description: Create Greeting Function
+  CreateGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - CreateGreetingFunction
+        - Arn
+    Description: Create Greeting Function ARN
   FindGreetingFunctionName:
     Value: !Ref FindGreetingFunction
     Description: Find Greeting Function
