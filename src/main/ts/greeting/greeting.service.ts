@@ -7,35 +7,42 @@ import { Greeting } from './greeting';
 
 export class GreetingService {
 
-  tableName: string = process.env.TABLE_NAME;
+  greetingTable: string = process.env.TABLE_NAME;
+  greetingReferenceGsi: string = process.env.GSI_REFERENCE_NAME;
   ddb: AWS.DynamoDB = new AWS.DynamoDB({ apiVersion: '2012-10-08' });
 
-  findById(id: string): Rx.Observable<Greeting>|any {
-    console.log(`> findById`);
+  findByReferenceId(referenceId: string): Rx.Observable<Greeting>|any {
+    console.log(`> findByReferenceId`);
 
     const params: any = {
-      TableName: this.tableName,
-      Key: {
-        'id': { S: `${id}` }
+      TableName: this.greetingTable,
+      IndexName: this.greetingReferenceGsi,
+      Limit: 1,
+      KeyConditionExpression: 'referenceId = :refId',
+      ExpressionAttributeValues: {
+        ':refId': { S: `${referenceId}` }
       }
     };
     console.log(`- params: ${JSON.stringify(params)}`);
 
-    const getItem: any =
-      Rx.Observable.bindNodeCallback(this.ddb.getItem.bind(this.ddb));
+    const query: any =
+      Rx.Observable.bindNodeCallback(this.ddb.query.bind(this.ddb));
 
-    console.log(`< findById`);
-    return getItem(params)
+    console.log(`< findByReferenceId`);
+    return query(params)
       .map((data: any) => {
         console.log(`- map`);
         console.log(`- data: ${JSON.stringify(data)}`);
-        if (data.Item) {
-          const greeting: Greeting = new Greeting();
-          greeting.id = _.get(data, 'Item.id.S', '');
-          greeting.text = _.get(data, 'Item.text.S', '');
-          return greeting;
-        } else {
+        if (data.Count === 0) {
           return {};
+        } else {
+          for (const item of data.Items) {
+            const greeting: Greeting = new Greeting();
+            greeting.referenceId = _.get(item, 'referenceId.S', '');
+            greeting.language = _.get(item, 'language.S', '');
+            greeting.value = _.get(item, 'value.S', '');
+            return greeting;
+          }
         }
       });
   }
@@ -43,15 +50,16 @@ export class GreetingService {
   save(greeting: Greeting): Rx.Observable<Greeting>|any {
     console.log(`> save`);
 
-    greeting.id = uuid();
+    greeting.referenceId = uuid();
 
     const params: any = {
-      TableName: this.tableName,
+      TableName: this.greetingTable,
       Item: {
-        'id': { S: `${greeting.id}` },
-        'text': { S: `${greeting.text}` }
+        'language': { S: `${greeting.language}` },
+        'value': { S: `${greeting.value}` },
+        'referenceId': { S: `${greeting.referenceId}` }
       },
-      ConditionExpression: `attribute_not_exists(id)`
+      ConditionExpression: `attribute_not_exists(referenceId)`
     };
     console.log(`- params: ${JSON.stringify(params)}`);
 
