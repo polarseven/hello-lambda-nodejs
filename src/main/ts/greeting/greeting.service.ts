@@ -8,19 +8,51 @@ import { Greeting } from './greeting';
 export class GreetingService {
 
   greetingTable: string = process.env.TABLE_NAME;
-  greetingReferenceGsi: string = process.env.GSI_REFERENCE_NAME;
+  greetingValueGsi: string = process.env.GSI_VALUE_NAME;
   ddb: AWS.DynamoDB = new AWS.DynamoDB({ apiVersion: '2012-10-08' });
 
-  findByReferenceId(referenceId: string): Rx.Observable<Greeting> | any {
-    console.log(`> findByReferenceId`);
+  findById(id: string): Rx.Observable<Greeting> | any {
+    console.log(`> findById`);
 
     const params: any = {
       TableName: this.greetingTable,
-      IndexName: this.greetingReferenceGsi,
+      Key: {
+        'id': { S: `${id}` }
+      }
+    };
+    console.log(`- params: ${JSON.stringify(params)}`);
+
+    const getItem: any =
+      Rx.Observable.bindNodeCallback(this.ddb.getItem.bind(this.ddb));
+
+    console.log(`< findById`);
+    return getItem(params)
+      .map((data: any) => {
+        console.log(`- map`);
+        console.log(`- data: ${JSON.stringify(data)}`);
+        if (data.Item) {
+            const greeting: Greeting = new Greeting();
+            greeting.id = _.get(data, 'Item.id.S', '');
+            greeting.language = _.get(data, 'Item.language.S', '');
+            greeting.value = _.get(data, 'Item.value.S', '');
+            return greeting;
+        } else {
+          return {};
+        }
+      });
+  }
+
+  findByValue(value: string, language: string = 'en'): Rx.Observable<Greeting> | any {
+    console.log(`> findByValue`);
+
+    const params: any = {
+      TableName: this.greetingTable,
+      IndexName: this.greetingValueGsi,
       Limit: 1,
-      KeyConditionExpression: 'referenceId = :refId',
+      KeyConditionExpression: 'language = :lang AND value = :val',
       ExpressionAttributeValues: {
-        ':refId': { S: `${referenceId}` }
+        ':lang': { S: `${language}` },
+        ':val': { S: `${value}` }
       }
     };
     console.log(`- params: ${JSON.stringify(params)}`);
@@ -28,7 +60,7 @@ export class GreetingService {
     const query: any =
       Rx.Observable.bindNodeCallback(this.ddb.query.bind(this.ddb));
 
-    console.log(`< findByReferenceId`);
+    console.log(`< findByValue`);
     return query(params)
       .map((data: any) => {
         console.log(`- map`);
@@ -38,7 +70,7 @@ export class GreetingService {
         } else {
           for (const item of data.Items) {
             const greeting: Greeting = new Greeting();
-            greeting.referenceId = _.get(item, 'referenceId.S', '');
+            greeting.id = _.get(item, 'id.S', '');
             greeting.language = _.get(item, 'language.S', '');
             greeting.value = _.get(item, 'value.S', '');
             return greeting;
@@ -70,7 +102,7 @@ export class GreetingService {
           const greetings: Greeting[] = [];
           for (const item of data.Items) {
             const greeting: Greeting = new Greeting();
-            greeting.referenceId = _.get(item, 'referenceId.S', '');
+            greeting.id = _.get(item, 'id.S', '');
             greeting.language = _.get(item, 'language.S', '');
             greeting.value = _.get(item, 'value.S', '');
 
@@ -81,19 +113,51 @@ export class GreetingService {
       });
   }
 
+  update(greeting: Greeting): Rx.Observable<Greeting> | any {
+    console.log(`> update`);
+
+    const params: any = {
+      TableName: this.greetingTable,
+      ExpressionAttributeNames: {
+        '#language': 'language',
+        '#value': 'value'
+      },
+      ExpressionAttributeValues: {
+        ':language': { S: `${greeting.language}` },
+        ':value': { S: `${greeting.value}` }
+      },
+      Key: {
+        'id': { S: `${greeting.id}` }
+      },
+      UpdateExpression: 'SET #language = :language, #value = :value '
+    };
+    console.log(`- params: ${JSON.stringify(params)}`);
+
+    const updateItem: any =
+      Rx.Observable.bindNodeCallback(this.ddb.updateItem.bind(this.ddb));
+
+    console.log(`< update`);
+    return updateItem(params)
+      .map((data: any) => {
+        console.log(`- map`);
+        console.log(`- data: ${JSON.stringify(data)}`);
+        return {};
+      });
+  }
+
   save(greeting: Greeting): Rx.Observable<Greeting> | any {
     console.log(`> save`);
 
-    greeting.referenceId = uuid();
+    greeting.id = uuid();
 
     const params: any = {
       TableName: this.greetingTable,
       Item: {
         'language': { S: `${greeting.language}` },
         'value': { S: `${greeting.value}` },
-        'referenceId': { S: `${greeting.referenceId}` }
+        'id': { S: `${greeting.id}` }
       },
-      ConditionExpression: `attribute_not_exists(referenceId)`
+      ConditionExpression: `attribute_not_exists(id)`
     };
     console.log(`- params: ${JSON.stringify(params)}`);
 

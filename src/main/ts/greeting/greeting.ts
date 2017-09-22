@@ -1,5 +1,5 @@
 export class Greeting {
-  referenceId: string;
+  id: string;
   language: string;
   value: string;
 }

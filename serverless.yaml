@@ -17,31 +17,31 @@ Resources:
     Properties:
       AttributeDefinitions:
         -
+          AttributeName: id
+          AttributeType: S
+        -
           AttributeName: language
           AttributeType: S
         -
           AttributeName: value
-          AttributeType: S
-        -
-          AttributeName: referenceId
           AttributeType: S
       KeySchema:
         -
-          AttributeName: language
+          AttributeName: id
           KeyType: HASH
-        -
-          AttributeName: value
-          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       GlobalSecondaryIndexes:
         -
-          IndexName: GreetingReference
+          IndexName: GreetingValue
           KeySchema:
             -
-              AttributeName: referenceId
+              AttributeName: language
               KeyType: HASH
+            -
+              AttributeName: value
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
@@ -70,7 +70,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref GreetingTable
-          GSI_REFERENCE_NAME: GreetingReference
+          GSI_REFERENCE_NAME: GreetingValue
       Tags:
         - Key: Name
           Value: CreateGreeting
@@ -94,7 +94,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref GreetingTable
-          GSI_REFERENCE_NAME: GreetingReference
+          GSI_REFERENCE_NAME: GreetingValue
       Tags:
         - Key: Name
           Value: FindGreeting
@@ -118,10 +118,34 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref GreetingTable
-          GSI_REFERENCE_NAME: GreetingReference
+          GSI_REFERENCE_NAME: GreetingValue
       Tags:
         - Key: Name
           Value: FindGreetings
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  UpdateGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Updates a Greeting in DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: updategreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: UpdateGreeting
         - Key: Environment
           Value: Lab
         - Key: Owner
@@ -253,6 +277,15 @@ Outputs:
         - FindGreetingsFunction
         - Arn
     Description: Find Greetings Function ARN
+  UpdateGreetingFunctionName:
+    Value: !Ref UpdateGreetingFunction
+    Description: Update Greeting Function
+  UpdateGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - UpdateGreetingFunction
+        - Arn
+    Description: Update Greeting Function ARN
   ListBucketsFunctionName:
     Value: !Ref ListBucketsFunction
     Description: List Buckets Function

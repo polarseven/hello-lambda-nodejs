@@ -9,7 +9,7 @@ export function handler(event: any, context: any, callback: any): void {
 
   const greetingService: GreetingService = new GreetingService();
 
-  greetingService.findByReferenceId(event.referenceId)
+  greetingService.findById(event.id)
     .subscribe((greeting: any) => {
       console.log(`- subscribe`);
       console.log(`- greeting: ${JSON.stringify(greeting)}`);
