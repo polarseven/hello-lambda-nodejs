@@ -103,6 +103,30 @@ Resources:
         - Key: Owner
           Value: Matthew Warman
 
+  FindGreetingsFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Find all Greetings.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: findgreetings.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingReference
+      Tags:
+        - Key: Name
+          Value: FindGreetings
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
   ListBucketsFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -220,6 +244,15 @@ Outputs:
         - FindGreetingFunction
         - Arn
     Description: Find Greeting Function ARN
+  FindGreetingsFunctionName:
+    Value: !Ref FindGreetingsFunction
+    Description: Find Greetings Function
+  FindGreetingsFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - FindGreetingsFunction
+        - Arn
+    Description: Find Greetings Function ARN
   ListBucketsFunctionName:
     Value: !Ref ListBucketsFunction
     Description: List Buckets Function

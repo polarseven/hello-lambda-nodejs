@@ -11,7 +11,7 @@ export class GreetingService {
   greetingReferenceGsi: string = process.env.GSI_REFERENCE_NAME;
   ddb: AWS.DynamoDB = new AWS.DynamoDB({ apiVersion: '2012-10-08' });
 
-  findByReferenceId(referenceId: string): Rx.Observable<Greeting>|any {
+  findByReferenceId(referenceId: string): Rx.Observable<Greeting> | any {
     console.log(`> findByReferenceId`);
 
     const params: any = {
@@ -47,7 +47,41 @@ export class GreetingService {
       });
   }
 
-  save(greeting: Greeting): Rx.Observable<Greeting>|any {
+  findAll(): Rx.Observable<Greeting[]> | any {
+    console.log(`> findAll`);
+
+    const params: any = {
+      TableName: this.greetingTable,
+      Limit: 1000
+    };
+    console.log(`- params: ${JSON.stringify(params)}`);
+
+    const scan: any =
+      Rx.Observable.bindNodeCallback(this.ddb.scan.bind(this.ddb));
+
+    console.log(`< findAll`);
+    return scan(params)
+      .map((data: any) => {
+        console.log(`- map`);
+        console.log(`- data: ${JSON.stringify(data)}`);
+        if (data.Count === 0) {
+          return [];
+        } else {
+          const greetings: Greeting[] = [];
+          for (const item of data.Items) {
+            const greeting: Greeting = new Greeting();
+            greeting.referenceId = _.get(item, 'referenceId.S', '');
+            greeting.language = _.get(item, 'language.S', '');
+            greeting.value = _.get(item, 'value.S', '');
+
+            greetings.push(greeting);
+          }
+          return greetings;
+        }
+      });
+  }
+
+  save(greeting: Greeting): Rx.Observable<Greeting> | any {
     console.log(`> save`);
 
     greeting.referenceId = uuid();
