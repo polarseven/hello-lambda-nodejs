@@ -173,4 +173,22 @@ export class GreetingService {
       });
   }
 
+  delete(id: string): Rx.Observable<Object> | any {
+    console.log(`> delete`);
+
+    const params: any = {
+      TableName: this.greetingTable,
+      Key: {
+        'id': { S: `${id}` }
+      }
+    };
+    console.log(`- params: ${JSON.stringify(params)}`);
+
+    const deleteItem: any =
+      Rx.Observable.bindNodeCallback(this.ddb.deleteItem.bind(this.ddb));
+
+    console.log(`< findById`);
+    return deleteItem(params);
+  }
+
 }

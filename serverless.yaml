@@ -151,6 +151,30 @@ Resources:
         - Key: Owner
           Value: Matthew Warman
 
+  DeleteGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Deletes a Greeting from DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: deletegreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: DeleteGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
   ListBucketsFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -286,6 +310,15 @@ Outputs:
         - UpdateGreetingFunction
         - Arn
     Description: Update Greeting Function ARN
+  DeleteGreetingFunctionName:
+    Value: !Ref DeleteGreetingFunction
+    Description: Delete Greeting Function
+  DeleteGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - DeleteGreetingFunction
+        - Arn
+    Description: Delete Greeting Function ARN
   ListBucketsFunctionName:
     Value: !Ref ListBucketsFunction
     Description: List Buckets Function
