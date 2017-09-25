@@ -4,10 +4,21 @@ const sequence = require('run-sequence');
 const ts = require('gulp-typescript');
 const tslint = require('gulp-tslint');
 const tsProject = ts.createProject('tsconfig.json');
+const typedoc = require('gulp-typedoc');
 const zip = require('gulp-zip');
 
 gulp.task('clean', (callback) =>
   del(['dist'], callback)
+);
+
+gulp.task('docs', () =>
+  gulp.src('src/main/ts/**/*.ts')
+  .pipe(typedoc({
+    module: 'commonjs',
+    target: 'es6',
+    out: 'dist/docs/',
+    name: 'Hello Lambda'
+  }))
 );
 
 gulp.task('lint', () =>

@@ -1,0 +1,366 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Hello Lambda Node.JS Stack."
+
+Parameters:
+  FunctionBucket:
+    Type: String
+    Description: S3 Bucket for the Lambda Artifact
+    Default: net.leanstacks.lambda
+  FunctionBucketKey:
+    Type: String
+    Description: S3 Bucket Key for the Lambda Artifact
+    Default: hello-lambda-nodejs/archive.zip
+
+Resources:
+  GreetingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: id
+          AttributeType: S
+        -
+          AttributeName: language
+          AttributeType: S
+        -
+          AttributeName: value
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        -
+          IndexName: GreetingValue
+          KeySchema:
+            -
+              AttributeName: language
+              KeyType: HASH
+            -
+              AttributeName: value
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      Tags:
+        - Key: Name
+          Value: GreetingTable
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  CreateGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Create a Greeting and save in DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: creategreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: CreateGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  FindGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Find a Greeting by primary key id.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: findgreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: FindGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  FindGreetingsFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Find all Greetings.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: findgreetings.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: FindGreetings
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  UpdateGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Updates a Greeting in DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: updategreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: UpdateGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  DeleteGreetingFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: GreetingTable
+    Properties:
+      Description: Deletes a Greeting from DynamoDB.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: deletegreeting.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Tags:
+        - Key: Name
+          Value: DeleteGreeting
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  ListBucketsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: List all S3 buckets.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: listbuckets.handler
+      Runtime: nodejs6.10
+      Timeout: 5
+      Role: arn:aws:iam::543563315878:role/AWSLambdaS3ExecutionRole
+      Tags:
+        - Key: Name
+          Value: ListBuckets
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  HelloWorldFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Hello World function authored in NodeJS.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: helloworld.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DEFAULT_GREETING: Hello World!
+      Tags:
+        - Key: Name
+          Value: HelloWorld
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  PingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Returns 'pong' when executed with any input.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: ping.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Ping
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  UppercaseFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Converts all String attributes to UPPERCASE.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: uppercase.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Uppercase
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+  LowercaseFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Converts all String attributes to lowercase.
+      Code:
+        S3Bucket: !Ref FunctionBucket
+        S3Key: !Ref FunctionBucketKey
+      Handler: lowercase.handler
+      Runtime: nodejs6.10
+      Timeout: 3
+      Role: arn:aws:iam::543563315878:role/LambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: Lowercase
+        - Key: Environment
+          Value: Lab
+        - Key: Owner
+          Value: Matthew Warman
+
+Outputs:
+  CreateGreetingFunctionName:
+    Value: !Ref CreateGreetingFunction
+    Description: Create Greeting Function
+  CreateGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - CreateGreetingFunction
+        - Arn
+    Description: Create Greeting Function ARN
+  FindGreetingFunctionName:
+    Value: !Ref FindGreetingFunction
+    Description: Find Greeting Function
+  FindGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - FindGreetingFunction
+        - Arn
+    Description: Find Greeting Function ARN
+  FindGreetingsFunctionName:
+    Value: !Ref FindGreetingsFunction
+    Description: Find Greetings Function
+  FindGreetingsFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - FindGreetingsFunction
+        - Arn
+    Description: Find Greetings Function ARN
+  UpdateGreetingFunctionName:
+    Value: !Ref UpdateGreetingFunction
+    Description: Update Greeting Function
+  UpdateGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - UpdateGreetingFunction
+        - Arn
+    Description: Update Greeting Function ARN
+  DeleteGreetingFunctionName:
+    Value: !Ref DeleteGreetingFunction
+    Description: Delete Greeting Function
+  DeleteGreetingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - DeleteGreetingFunction
+        - Arn
+    Description: Delete Greeting Function ARN
+  ListBucketsFunctionName:
+    Value: !Ref ListBucketsFunction
+    Description: List Buckets Function
+  ListBucketsFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - ListBucketsFunction
+        - Arn
+    Description: List Buckets Function ARN
+  HelloWorldFunctionName:
+    Value: !Ref HelloWorldFunction
+    Description: HelloWorld Function
+  HelloWorldFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - HelloWorldFunction
+        - Arn
+    Description: HelloWorld Function ARN
+  PingFunctionName:
+    Value: !Ref PingFunction
+    Description: Ping Function
+  PingFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - PingFunction
+        - Arn
+    Description: Ping Function ARN
+  UppercaseFunctionName:
+    Value: !Ref UppercaseFunction
+    Description: Uppercase Function
+  UppercaseFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - UppercaseFunction
+        - Arn
+    Description: Uppercase Function ARN
+  LowercaseFunctionName:
+    Value: !Ref LowercaseFunction
+    Description: Lowercase Function
+  LowercaseFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - LowercaseFunction
+        - Arn
+    Description: Lowercase Function ARN
