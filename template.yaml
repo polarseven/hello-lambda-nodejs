@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Hello Lambda Node.JS Stack."
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  HelloWorldApi:
+    Type: AWS::Serverless::Api
+    DependsOn: UppercaseFunction
+    Properties:
+      DefinitionUri: ./swagger.yaml
+      StageName: qa
+      Variables:
+        Region: !Ref AWS::Region
+        StackName: !Ref AWS::StackName
+        AccountId: !Ref AWS::AccountId
+        UppercaseFunction: !Ref UppercaseFunction
+
+  UppercaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: uppercase.handler
+      Runtime: nodejs6.10
+
+Outputs:
+  UppercaseFunctionName:
+    Value: !Ref UppercaseFunction
+    Description: Uppercase Function
+  UppercaseFunctionArn:
+    Value:
+      Fn::GetAtt:
+        - UppercaseFunction
+        - Arn
+    Description: Uppercase Function ARN
