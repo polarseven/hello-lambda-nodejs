@@ -1,19 +1,24 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Hello Lambda Node.JS Stack."
+Description: "Hello Lambda Node.js Stack."
 Transform: AWS::Serverless-2016-10-31
 
 Resources:
-  HelloWorldApi:
+  HelloApi:
     Type: AWS::Serverless::Api
-    DependsOn: UppercaseFunction
     Properties:
-      DefinitionUri: ./swagger.yaml
       StageName: qa
-      Variables:
-        Region: !Ref AWS::Region
-        StackName: !Ref AWS::StackName
-        AccountId: !Ref AWS::AccountId
-        UppercaseFunction: !Ref UppercaseFunction
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Ref AWS::StackName
+        paths:
+          /uppercase:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UppercaseFunction.Arn}/invocations
 
   UppercaseFunction:
     Type: AWS::Serverless::Function
@@ -21,14 +26,18 @@ Resources:
       CodeUri: ./dist/archive.zip
       Handler: uppercase.handler
       Runtime: nodejs6.10
+      Events:
+        UppercaseApi:
+          Type: Api
+          Properties:
+            Path: /uppercase
+            Method: POST
+            RestApiId: !Ref HelloApi
 
 Outputs:
+  ApiName:
+    Value: !Ref HelloApi
+    Description: API Gateway API
   UppercaseFunctionName:
     Value: !Ref UppercaseFunction
     Description: Uppercase Function
-  UppercaseFunctionArn:
-    Value:
-      Fn::GetAtt:
-        - UppercaseFunction
-        - Arn
-    Description: Uppercase Function ARN
