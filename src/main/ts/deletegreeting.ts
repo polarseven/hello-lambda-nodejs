@@ -14,19 +14,27 @@ import { GreetingService } from './greeting/greeting.service';
  */
 export function handler(event: any, context: any, callback: any): void {
   console.log(`> handler`);
+  console.log(`- event: ${JSON.stringify(event)}`);
+  const greeting: Greeting = JSON.parse(event.body) as Greeting;
+  console.log(`- event.body: ${JSON.stringify(greeting)}`);
 
   const greetingService: GreetingService = new GreetingService();
+  const response: any = {};
+  response.statusCode = 200;
 
-  greetingService.delete(event.id)
+  greetingService.delete(greeting.id)
     .subscribe((result: Object) => {
       console.log(`- subscribe`);
-      console.log(`- result: ${JSON.stringify(result)}`);
+      response.body = JSON.stringify(result);
+      console.log(`- response: ${JSON.stringify(response)}`);
       console.log(`< handler`);
-      callback(undefined, {});
+      callback(undefined, response);
     }, (err: any) => {
       console.error(err, err.stack);
+      response.statusCode = 500;
+      response.body = err;
       console.log(`< handler`);
-      callback(err, {});
+      callback(undefined, response);
     });
 
 }
