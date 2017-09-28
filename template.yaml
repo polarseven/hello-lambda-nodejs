@@ -18,27 +18,6 @@ Resources:
         info:
           title: !Ref AWS::StackName
         paths:
-          /ping:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
-          /uppercase:
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UppercaseFunction.Arn}/invocations
-          /lowercase:
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LowercaseFunction.Arn}/invocations
           /greetings:
             get:
               x-amazon-apigateway-integration:
@@ -72,68 +51,11 @@ Resources:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindGreetingFunction.Arn}/invocations
 
-  PingFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./dist/archive.zip
-      Handler: ping.handler
-      Runtime: nodejs6.10
-      Events:
-        UppercaseApi:
-          Type: Api
-          Properties:
-            Path: /ping
-            Method: GET
-            RestApiId: !Ref HelloApi
-      Tags:
-        Name: PingFunction
-        Application: HelloLambdaNodeJS
-        Environment: !Ref Environment
-        Owner: Matthew Warman
-
-  UppercaseFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./dist/archive.zip
-      Handler: uppercase.handler
-      Runtime: nodejs6.10
-      Events:
-        UppercaseApi:
-          Type: Api
-          Properties:
-            Path: /uppercase
-            Method: POST
-            RestApiId: !Ref HelloApi
-      Tags:
-        Name: UppercaseFunction
-        Application: HelloLambdaNodeJS
-        Environment: !Ref Environment
-        Owner: Matthew Warman
-
-  LowercaseFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./dist/archive.zip
-      Handler: lowercase.handler
-      Runtime: nodejs6.10
-      Events:
-        UppercaseApi:
-          Type: Api
-          Properties:
-            Path: /lowercase
-            Method: POST
-            RestApiId: !Ref HelloApi
-      Tags:
-        Name: LowercaseFunction
-        Application: HelloLambdaNodeJS
-        Environment: !Ref Environment
-        Owner: Matthew Warman
-
   FindGreetingsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./dist/archive.zip
-      Handler: findgreetings.handler
+      Handler: index.findAll
       Runtime: nodejs6.10
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
       Environment:
@@ -157,7 +79,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./dist/archive.zip
-      Handler: findgreeting.handler
+      Handler: index.findById
       Runtime: nodejs6.10
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
       Environment:
@@ -181,7 +103,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./dist/archive.zip
-      Handler: creategreeting.handler
+      Handler: index.create
       Runtime: nodejs6.10
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
       Environment:
@@ -205,7 +127,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./dist/archive.zip
-      Handler: updategreeting.handler
+      Handler: index.update
       Runtime: nodejs6.10
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
       Environment:
@@ -229,7 +151,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./dist/archive.zip
-      Handler: deletegreeting.handler
+      Handler: index.delete
       Runtime: nodejs6.10
       Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
       Environment:
@@ -293,11 +215,3 @@ Resources:
           Value: !Ref Environment
         - Key: Owner
           Value: Matthew Warman
-
-Outputs:
-  ApiName:
-    Value: !Ref HelloApi
-    Description: API Gateway API
-  UppercaseFunctionName:
-    Value: !Ref UppercaseFunction
-    Description: Uppercase Function
