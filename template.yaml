@@ -1,0 +1,303 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Hello Lambda Node.js Stack."
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment Environment
+    Default: en
+
+Resources:
+  HelloApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Ref AWS::StackName
+        paths:
+          /ping:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
+          /uppercase:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UppercaseFunction.Arn}/invocations
+          /lowercase:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LowercaseFunction.Arn}/invocations
+          /greetings:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindGreetingsFunction.Arn}/invocations
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateGreetingFunction.Arn}/invocations
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGreetingFunction.Arn}/invocations
+            delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteGreetingFunction.Arn}/invocations
+          /greetings/{greetingId}:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindGreetingFunction.Arn}/invocations
+
+  PingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: ping.handler
+      Runtime: nodejs6.10
+      Events:
+        UppercaseApi:
+          Type: Api
+          Properties:
+            Path: /ping
+            Method: GET
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: PingFunction
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  UppercaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: uppercase.handler
+      Runtime: nodejs6.10
+      Events:
+        UppercaseApi:
+          Type: Api
+          Properties:
+            Path: /uppercase
+            Method: POST
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: UppercaseFunction
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  LowercaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: lowercase.handler
+      Runtime: nodejs6.10
+      Events:
+        UppercaseApi:
+          Type: Api
+          Properties:
+            Path: /lowercase
+            Method: POST
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: LowercaseFunction
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  FindGreetingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: findgreetings.handler
+      Runtime: nodejs6.10
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Events:
+        FindGreetingsApi:
+          Type: Api
+          Properties:
+            Path: /greetings
+            Method: GET
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: FindGreetings
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  FindGreetingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: findgreeting.handler
+      Runtime: nodejs6.10
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Events:
+        FindGreetingsApi:
+          Type: Api
+          Properties:
+            Path: /greetings/{greetingId}
+            Method: GET
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: FindGreeting
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  CreateGreetingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: creategreeting.handler
+      Runtime: nodejs6.10
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Events:
+        CreateGreetingApi:
+          Type: Api
+          Properties:
+            Path: /greetings
+            Method: POST
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: CreateGreeting
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  UpdateGreetingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: updategreeting.handler
+      Runtime: nodejs6.10
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Events:
+        UpdateGreetingApi:
+          Type: Api
+          Properties:
+            Path: /greetings
+            Method: PUT
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: UpdateGreeting
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  DeleteGreetingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/archive.zip
+      Handler: deletegreeting.handler
+      Runtime: nodejs6.10
+      Role: arn:aws:iam::543563315878:role/LambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref GreetingTable
+          GSI_REFERENCE_NAME: GreetingValue
+      Events:
+        UpdateGreetingApi:
+          Type: Api
+          Properties:
+            Path: /greetings
+            Method: DELETE
+            RestApiId: !Ref HelloApi
+      Tags:
+        Name: DeleteGreeting
+        Application: HelloLambdaNodeJS
+        Environment: !Ref Environment
+        Owner: Matthew Warman
+
+  GreetingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: id
+          AttributeType: S
+        -
+          AttributeName: language
+          AttributeType: S
+        -
+          AttributeName: value
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        -
+          IndexName: GreetingValue
+          KeySchema:
+            -
+              AttributeName: language
+              KeyType: HASH
+            -
+              AttributeName: value
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      Tags:
+        - Key: Name
+          Value: GreetingTable
+        - Key: Application
+          Value: HelloLambdaNodeJS
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: Matthew Warman
+
+Outputs:
+  ApiName:
+    Value: !Ref HelloApi
+    Description: API Gateway API
+  UppercaseFunctionName:
+    Value: !Ref UppercaseFunction
+    Description: Uppercase Function
